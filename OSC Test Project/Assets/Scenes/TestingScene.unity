@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.4465782, g: 0.49641252, b: 0.5748167, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -273,6 +273,7 @@ GameObject:
   m_Component:
   - component: {fileID: 746734245}
   - component: {fileID: 746734244}
+  - component: {fileID: 746734246}
   m_Layer: 0
   m_Name: GameObject
   m_TagString: Untagged
@@ -292,9 +293,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 300699b393ba15b428b784bfe59e4ef5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  port: COM3
-  baudrate: 9600
+  port: 
+  baudrate: 115200
   timesToLoop: 50
+  d: {fileID: 746734246}
 --- !u!4 &746734245
 Transform:
   m_ObjectHideFlags: 0
@@ -309,3 +311,26 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &746734246
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 746734243}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c68b3110789d2bc4ea036d1a3855ff05, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  incoming: []
+  tree: {fileID: 7559677803955854179, guid: 02577a36ea514db4bbacccc266f2bd41, type: 3}
+  Data:
+  - name: Milliseconds
+    data: []
+  - name: Seconds
+    data: []
+  - name: RandomData
+    data: []
+  - name: Position
+    data: []

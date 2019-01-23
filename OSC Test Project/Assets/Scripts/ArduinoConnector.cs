@@ -21,7 +21,8 @@ public class ArduinoConnector : MonoBehaviour
 
     //SerialPort IO stream
     private SerialPort stream;
-    
+
+    public ArduinoData d;
 
     /// <summary>
     /// Opens a Serial Port, timesout after 50 milliseconds
@@ -29,10 +30,28 @@ public class ArduinoConnector : MonoBehaviour
     public void Open()
     {
         //Open Serial Port
-        Debug.Log("Open Serial Port");
-        stream = new SerialPort(port, baudrate);
-        stream.ReadTimeout = 50;
-        stream.Open();
+        if (SerialPort.GetPortNames().Length > 0)
+        {
+            Debug.Log("Open Serial Port " + SerialPort.GetPortNames()[0]);
+            port = SerialPort.GetPortNames()[0];
+
+
+
+            stream = new SerialPort(SerialPort.GetPortNames()[0], baudrate);
+            stream.ReadTimeout = 5;
+            stream.WriteTimeout = 5;
+            try
+            {
+                stream.Open();
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Stream Failed to open: " + e.ToString());
+            }
+        } else
+        {
+            Debug.LogWarning("No COM ports found!");
+        }
 
     }
 
@@ -42,10 +61,22 @@ public class ArduinoConnector : MonoBehaviour
     /// <param name="message">The Message to be sent</param>
     public void WriteToArduino(string message)
     {
-        //Send a Read Request
-        Debug.Log("Write to Arduino: " + message);
-        stream.WriteLine(message);
-        stream.BaseStream.Flush();
+        if (stream != null)
+        {
+            if (stream.IsOpen)
+            {
+                //Send a Read Request
+                Debug.Log("Write to Arduino: " + message);
+                stream.WriteLine(message + System.Environment.NewLine);
+                stream.BaseStream.Flush();
+            } else
+            {
+                Debug.LogWarning("Can't Write; Stream isn't open!");
+            }
+        } else
+        {
+            Debug.LogWarning("Serial Port isn't initialized");
+        }
     }
 
     /// <summary>
@@ -55,15 +86,29 @@ public class ArduinoConnector : MonoBehaviour
     /// <returns>Data from the Arduino board as a string format</returns>
     public string ReadFromArduino(int timeout = 10)
     {
-        stream.ReadTimeout = timeout;
-        try
+        if (stream != null)
         {
-            Debug.Log(stream.ReadLine());
-            return stream.ReadLine();
+            if (stream.IsOpen)
+            {
+                stream.ReadTimeout = timeout;
+                try
+                {
+                    Debug.Log(stream.ReadLine());
+                    return stream.ReadLine();
 
-        }
-        catch (TimeoutException)
+                }
+                catch (TimeoutException)
+                {
+                    return null;
+                }
+            } else
+            {
+                Debug.LogWarning("Serial Port isn't open!");
+                return null;
+            }
+        } else
         {
+            Debug.LogWarning("Serial Port isn't initialized!");
             return null;
         }
     }
@@ -90,7 +135,9 @@ public class ArduinoConnector : MonoBehaviour
             try
             {
                 
-                dataString = stream.ReadLine();
+                if (stream != null)
+                    if (stream.IsOpen)
+                        dataString = stream.ReadLine();
                 
 
             }
@@ -129,7 +176,10 @@ public class ArduinoConnector : MonoBehaviour
     /// </summary>
     public void Close()
     {
-        stream.Close();
+        if (stream != null)
+            if (stream.IsOpen)
+                stream.Close();
+        Debug.Log("Closed the stream");
     }
     /// <summary>
     /// Standard Unity start function
@@ -137,15 +187,73 @@ public class ArduinoConnector : MonoBehaviour
     public void Start()
     {
         Open();
+        StartCoroutine(AsynchronousReadFromArduino((string s) => d.incoming.Add(s), () => Debug.LogError("Error"), 1000f));
 
-        for (int i = 0; i < timesToLoop; i++)
-        {
-            WriteToArduino("PING");
-        }
+        WriteToArduino("PING");
+        
         //ReadFromArduino();
         
-        StartCoroutine(AsynchronousReadFromArduino((string s) => Debug.Log(s), () => Debug.LogError("Error"), 10000f));
+        
+
+        WriteToArduino("ECHO Hello");
+
+       // StartCoroutine(AsynchronousReadFromArduino((string s) => Debug.Log(s), () => Debug.LogError("Error"), 1000f));
+
         //Close();
+    }
+
+    public void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            if (stream != null)
+            {
+                if (stream.IsOpen)
+                {
+                    WriteToArduino("SEND MILLIS");
+                }
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            if (stream != null)
+            {
+                if (stream.IsOpen)
+                {
+                    WriteToArduino("ECHO Test");
+                }
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.D))
+        {
+            if (stream != null)
+            {
+                if (stream.IsOpen)
+                {
+                    WriteToArduino("SENDALL");
+                }
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            if (stream != null)
+            {
+                if (stream.IsOpen)
+                {
+                    WriteToArduino("SEND POS");
+                }
+            }
+        }
+    }
+
+    public void OnApplicationQuit()
+    {
+        if (stream != null)
+            if (stream.IsOpen)
+                Close();
     }
 }
 
